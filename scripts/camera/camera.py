@@ -10,7 +10,6 @@ except:
     pass
 import cv2
 import yaml
-
 import pyrealsense2 as rs
 import numpy as np
 import open3d as o3d
@@ -63,7 +62,7 @@ class IntelCamera:
         else:
             self.intrinsic_o3d = o3d.camera.PinholeCameraIntrinsic(640, 480, self.fx, self.fy, self.ppx, self.ppy)
 
-        self.camera_mat = np.array([[self.fx, 0, self.ppx], [0, self.fy, self.ppy], [0, 0, 1]], dtype=np.float)
+        self.camera_mat = np.array([[self.fx, 0, self.ppx], [0, self.fy, self.ppy], [0, 0, 1]], dtype=np.float64)
 
         self.dist_coeffs = np.zeros(4)
         self.colorizer = rs.colorizer(color_scheme = 2)
@@ -75,7 +74,7 @@ class IntelCamera:
         self.aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
         self.aruco_dict_ch = aruco.Dictionary_get(aruco.DICT_4X4_250)
 
-        self.z_min = -0.05
+        self.z_min = -0.08
     
     def stream(self):
         
@@ -175,7 +174,7 @@ class IntelCamera:
             self.saw_charuco = True
 
         gray_img = cv2.cvtColor(self.color_image, cv2.COLOR_BGR2GRAY)
-        corners, ids, rejected_points  =  aruco.detectMarkers(gray_img, self.aruco_dict_ch, parameters=self.params)
+        corners, ids, rejected_points  = aruco.detectMarkers(gray_img, self.aruco_dict_ch, parameters=self.params)
         if np.shape(corners)[0] <= 0:
             print("INFO: No Marker Detected")
         
@@ -184,7 +183,7 @@ class IntelCamera:
             aruco.refineDetectedMarkers(gray_img, self.board, corners, ids, rejected_points)
             _, charuco_corners, charuco_ids = aruco.interpolateCornersCharuco(corners, ids, gray_img, self.board, self.camera_mat, self.dist_coeffs)
             if len(corners) > 10:
-                _, rvec, tvec = aruco.estimatePoseCharucoBoard(charuco_corners, charuco_ids, self.board, self.camera_mat, self.dist_coeffs)
+                _, rvec, tvec = aruco.estimatePoseCharucoBoard(charuco_corners, charuco_ids, self.board, self.camera_mat, self.dist_coeffs, np.empty(1), np.empty(1))
                 R, _ = cv2.Rodrigues(rvec)
                 tvec = np.reshape(tvec, (3, 1))
                 self.cam2marker = np.concatenate((R, tvec), axis = 1)
@@ -311,7 +310,7 @@ class KinectCamera(IntelCamera):
             raise RuntimeError('Failed to connect to sensor')
         
         else:
-            print('MicroSoft AzureKinect' + " is ready")
+            print('MicroSoft AzureKinecte' + " is ready")
             self.device_product_line = 'AzureKinect'
 
         self._dummy_frame = 0
@@ -330,7 +329,6 @@ class KinectCamera(IntelCamera):
         self.depth_image = np.asarray(rgbd.depth)
 
         return self.color_image, self.depth_image
-
 
 if __name__ == '__main__':
 

@@ -1,10 +1,11 @@
-#!/home/hand-eye/.virtualenvs/hand-eye/bin/python
 import sys
 import os
 import rospy
 from std_msgs.msg import UInt8
 from geometry_msgs.msg import Pose
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+
+sys.path.insert(0, '/home/vision/catkin_ws/src/hand-eye-calibration/scripts')
+from camera import IntelCamera
 
 import cv2
 import yaml
@@ -27,7 +28,6 @@ cam = IntelCamera(cfg=[])
 rospy.init_node('manipulator', anonymous=True)
 rospy.Subscriber('tcp_pose', Pose, tcp_pose_callback)
 tcp_pose_publisher = rospy.Publisher('/command', UInt8, queue_size=10)
-
 tcp_pose = Pose()
 updated_tcp_pose = False
 
@@ -42,7 +42,10 @@ pose_stack_yaml['base2end'] = {}
 
 while not rospy.is_shutdown():
     rgb_img, _ = cam.stream()
-    cam.detectCharuco()
+    try:
+        cam.detectCharuco()
+    except:
+        print("No charuco board detected")
     cv2.imshow("rgb", rgb_img)
     key = cv2.waitKey(1)
     
@@ -87,8 +90,8 @@ while not rospy.is_shutdown():
     elif key == ord('e'):
         break
 
-with open(ref_path+"/src/hand-eye_calibration/calibration/log.yml", 'w') as f:
-            
+with open("/home/vision/catkin_ws/src/hand-eye-calibration/calibration/log.yml", 'w') as f:
+      
     yaml.dump(pose_stack_yaml, f, default_flow_style=None)
 
 print("DONE!")

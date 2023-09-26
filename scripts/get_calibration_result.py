@@ -3,10 +3,9 @@ import cv2
 import yaml
 import numpy as np
 import pprint
-
-# Hardcoded file paths for the log.yaml files
-log_file1 = '/home/catkin_ws/src/hand-eye_calibration/calibration/first.yml'
-log_file2 = '/home/catkin_ws/src/hand-eye_calibration/calibration/second.yml'
+import os
+log_file1 = os.path.expanduser('~/catkin_ws/src/hand-eye-calibration/calibration/first.yml')
+log_file2 = os.path.expanduser('~/catkin_ws/src/hand-eye-calibration/calibration/second.yml')
 
 def load_poses(file_path):
     with open(file_path) as f:
@@ -35,18 +34,21 @@ rot_a2, trans_a2, rot_b2, trans_b2 = load_poses(log_file2)
 result1 = cv2.calibrateRobotWorldHandEye(rot_a1, trans_a1, rot_b1, trans_b1)
 result2 = cv2.calibrateRobotWorldHandEye(rot_a2, trans_a2, rot_b2, trans_b2)
 
-# Convert the results to a dictionary and save to the YAML file
-config_data = {
-    'base2cam_demo': {
-        'base2cam_1': np.hstack((result1[0], result1[1].reshape(-1, 1))).flatten().tolist(),
-        'base2cam_2': np.hstack((result2[0], result2[1].reshape(-1, 1))).flatten().tolist(),
-    }
-}
+task_path = os.path.expanduser('~/catkin_ws/src/suction_net_ros/config/task_config.yml')
+with open(task_path, 'r') as f:
+    config_data = yaml.load(f, Loader=yaml.FullLoader)
 
-with open('/home/catkin_ws/src/suction_net_ros/config/task_config.yml', 'w') as f:
+# Update the matrices in the config data
+config_data['TF']['base2cam_demo']['base2cam_1'] = np.hstack((result1[0], result1[1].reshape(-1, 1))).flatten().tolist()
+config_data['TF']['base2cam_demo']['base2cam_2'] = np.hstack((result2[0], result2[1].reshape(-1, 1))).flatten().tolist()
+
+# Write the updated config data back to the file
+with open(task_path, 'w') as f:
     yaml.dump(config_data, f)
 
 pprint.pprint("Calibration Result for Camera 1:")
 pprint.pprint(result1)
 pprint.pprint("Calibration Result for Camera 2:")
 pprint.pprint(result2)
+
+

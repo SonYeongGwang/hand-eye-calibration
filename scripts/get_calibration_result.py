@@ -3,6 +3,19 @@ import pprint
 from ruamel.yaml import YAML
 import numpy as np
 import cv2
+import argparse
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Calibrate cameras and save calibration data as YAML.')
+parser.add_argument('--camera', type=str, required=True, default='right', help='List of cameras to calibrate (default: right left)')
+args = parser.parse_args()
+
+
+
+yaml = YAML()
+yaml.default_flow_style = None
+log_file1 = os.path.expanduser('~/catkin_ws/src/hand-eye-calibration/calibration/right.yml')
+log_file2 = os.path.expanduser('~/catkin_ws/src/hand-eye-calibration/calibration/left.yml')
 
 # Define constants for file paths
 CALIBRATION_DIR = os.path.expanduser('~/catkin_ws/src/hand-eye-calibration/calibration')

@@ -6,6 +6,9 @@ from geometry_msgs.msg import Pose
 
 sys.path.insert(0, '/home/vision/catkin_ws/src/hand-eye-calibration/scripts')
 from camera import IntelCamera
+import argparse
+# Import other necessary modules ...
+
 
 import cv2
 import yaml
@@ -13,6 +16,18 @@ import numpy as np
 from camera import IntelCamera, KinectCamera
 from scipy.spatial.transform import Rotation as R
 import pprint
+
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser(description='Calibrate cameras and save calibration data as YAML.')
+parser.add_argument('--camera', type=str, required=True, default='right', help='List of cameras to calibrate (default: right left)')
+args = parser.parse_args()
+
+print(f"This is {', '.join(args.camera)} camera calibration")
+
+## read task config
+with open("./src/suction_net_ros/config/task_config.yml") as f:
+    cfg = yaml.load(f, Loader=yaml.FullLoader)
 
 def tcp_pose_callback(msg):
     global tcp_pose
@@ -24,7 +39,14 @@ def tcp_pose_callback(msg):
 
 ref_path = os.getcwd()
 
-cam = IntelCamera(cfg=[])
+if args.camera == 'right':
+    cfg['cam'] = 'right'
+elif args.camera == 'left':
+    cfg['cam'] = 'left'
+else:
+    raise ValueError("Invalid camera name")
+
+cam = IntelCamera(cfg)
 rospy.init_node('manipulator', anonymous=True)
 rospy.Subscriber('tcp_pose', Pose, tcp_pose_callback)
 tcp_pose_publisher = rospy.Publisher('/command', UInt8, queue_size=10)
@@ -32,6 +54,7 @@ tcp_pose = Pose()
 updated_tcp_pose = False
 
 stack_count = 1
+
 pose_stack = {}
 pose_stack['cam2marker'] = {}
 pose_stack['base2end'] = {}
@@ -48,7 +71,7 @@ while not rospy.is_shutdown():
         print("No charuco board detected")
     cv2.imshow("rgb", rgb_img)
     key = cv2.waitKey(1)
-    
+
     if key == ord('s'):
         
         ## send request for the tcp pose
@@ -90,7 +113,9 @@ while not rospy.is_shutdown():
     elif key == ord('e'):
         break
 
-with open("/home/vision/catkin_ws/src/hand-eye-calibration/calibration/log.yml", 'w') as f:
+file_path = f"/home/vision/catkin_ws/src/hand-eye-calibration/calibration/{args.camera}.yml"
+
+with open(file_path, 'w') as f:
       
     yaml.dump(pose_stack_yaml, f, default_flow_style=None)
 

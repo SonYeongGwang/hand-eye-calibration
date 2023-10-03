@@ -28,6 +28,12 @@ class IntelCamera:
         self.spatial_filter = rs.spatial_filter()
         self.hole_filling_filter = rs.hole_filling_filter(0)
 
+        if self.cfg['demo_mode'] == True:
+            if self.cfg['cam'] == 'right':
+                self.config.enable_device(self.cfg['right_cam'])
+            elif self.cfg['cam'] == 'left':
+                self.config.enable_device(self.cfg['left_cam'])
+
         pipeline_wrapper = rs.pipeline_wrapper(self.pipeline)
         pipeline_profile = self.config.resolve(pipeline_wrapper)
         device = pipeline_profile.get_device()
@@ -45,6 +51,14 @@ class IntelCamera:
             self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
             self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
 
+        print("Available Devices:")
+        for idx in range(0, self.context.query_devices().size()):
+            dev = self.context.query_devices()[idx]
+            print(idx, dev.get_info(rs.camera_info.name), dev.get_info(rs.camera_info.serial_number))
+
+        print("Requested Configuration:")
+        print("Device:", cfg['cam'])
+        print("Streams: Color - 640x480@30fps, Depth - 640x480@30fps")
         self.profile = self.pipeline.start(self.config)
         depth_sensor = self.profile.get_device().first_depth_sensor()
         self.depth_scale = depth_sensor.get_depth_scale()

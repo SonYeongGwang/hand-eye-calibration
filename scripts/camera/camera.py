@@ -183,7 +183,7 @@ class IntelCamera:
 
     def detectCharuco(self):
         if self.saw_charuco != True:
-            self.board = aruco.CharucoBoard_create(7, 5, 0.035, 0.025, self.aruco_dict_ch)
+            self.board = aruco.CharucoBoard_create(7, 5, 0.0365, 0.026, self.aruco_dict_ch)
             self.params = aruco.DetectorParameters_create()
             self.saw_charuco = True
 
@@ -346,7 +346,7 @@ class KinectCamera(IntelCamera):
 
 if __name__ == '__main__':
 
-    # cam = IntelCamera(cfg=[])
+     # cam = IntelCamera(cfg=[])
     # cam.create_aruco_marker(aruco.DICT_6X6_50)
     import os
     ref_path = os.getcwd()
@@ -354,7 +354,10 @@ if __name__ == '__main__':
     # with open(ref_path+"/core/config/suction_config.yml") as f:
     #     cfg = yaml.load(f, Loader=yaml.FullLoader)
     #     cfg['TF']['end2cam'] = np.reshape(cfg['TF']['end2cam'], (4, 4))
-    cfg = []
+    cfg = {}
+    cfg['demo_mode'] = True
+    cfg['cam'] = 'right'
+    cfg['right_cam'] = 'f1370591'
     # cam = KinectCamera(cfg)
     cam = IntelCamera(cfg)
     print(cam.depth_scale)
@@ -366,12 +369,12 @@ if __name__ == '__main__':
 
     while 1:
         rgb_img, depth_img = cam.stream()
-        cam.detectAruco()
+        # cam.detectAruco()
 
-        # print(cam.cam2marker)
         # print(np.average(depth_img*0.00025))
         # xyz = cam.generate(depth_img)
-        # cam.detectCharuco()
+        cam.detectCharuco()
+        print(cam.cam2marker)
         # xyz = cam.cropPoints()
         # pcd.points = o3d.utility.Vector3dVector(xyz)
 

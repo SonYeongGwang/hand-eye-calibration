@@ -109,8 +109,8 @@ catkin_package(
 #  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
+set(PYTHON_EXECUTABLE "${CMAKE_SOURCE_DIR}/home/vision/.virtualenvs/torch-env/bin/python3")
 
-###########
 ## Build ##
 ###########
 

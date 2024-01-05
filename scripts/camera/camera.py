@@ -183,7 +183,7 @@ class IntelCamera:
 
     def detectCharuco(self):
         if self.saw_charuco != True:
-            self.board = aruco.CharucoBoard_create(7, 5, 0.0365, 0.026, self.aruco_dict_ch)
+            self.board = aruco.CharucoBoard_create(7, 5, 0.0355, 0.0255, self.aruco_dict_ch)
             self.params = aruco.DetectorParameters_create()
             self.saw_charuco = True
 

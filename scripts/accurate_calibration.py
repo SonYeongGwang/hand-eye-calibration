@@ -113,7 +113,8 @@ class CameraCalibration:
         return {"rot": rotation_mat, "trans": np.array([x, y, z])}
 
     def save(self, path):
-        """@brief Save the pose stack to a YAML file.
+        """
+        @brief Save the pose stack to a YAML file.
         @param path The path to save the file.
         """
         with open(path, 'w') as f:
